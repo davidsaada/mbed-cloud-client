@@ -684,11 +684,6 @@ arm_uc_error_t ARM_UC_PAL_RTL8195AM_GetActiveDetails(arm_uc_firmware_details_t *
         UC_PAAL_TRACE("active base: %d", base_slot);
 
         result = arm_uc_pal_get_realtek_header(base_slot, details);
-
-        /* signal event if operation was successful */
-        if (result.error == ERR_NONE) {
-            arm_uc_pal_rtl8195am_signal_internal(ARM_UC_PAAL_EVENT_GET_ACTIVE_FIRMWARE_DETAILS_DONE);
-        }
     }
 
     return result;
@@ -716,8 +711,6 @@ arm_uc_error_t ARM_UC_PAL_RTL8195AM_GetInstallerDetails(arm_uc_installer_details
         details->oem_hash[7] =  OTA_VER_ID        & 0xFF;
 
         result.code = ERR_NONE;
-
-        arm_uc_pal_rtl8195am_signal_internal(ARM_UC_PAAL_EVENT_GET_INSTALLER_DETAILS_DONE);
     }
 
     return result;

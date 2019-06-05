@@ -56,8 +56,8 @@ arm_ucp_worker_t arm_uc_worker_parameters_active_details = {
     .location = 0,
     .offset   = 0,
     .size     = 0,
-    .success_event = ARM_UC_PAAL_EVENT_GET_ACTIVE_FIRMWARE_DETAILS_DONE,
-    .failure_event = ARM_UC_PAAL_EVENT_GET_ACTIVE_FIRMWARE_DETAILS_ERROR,
+    .success_event = ARM_UC_PAAL_EVENT_NO_EVENT,
+    .failure_event = ARM_UC_PAAL_EVENT_NO_EVENT,
     .post_runner = NULL
 };
 

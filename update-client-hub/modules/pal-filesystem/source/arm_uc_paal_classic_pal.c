@@ -47,31 +47,22 @@ static void arm_uc_pal_classic_signal_callback(uintptr_t event)
 static void arm_uc_pal_classic_callback(palImageEvents_t event)
 {
     /*
-        ARM_UC_PAAL_EVENT_INITIALIZE_DONE,
         ARM_UC_PAAL_EVENT_PREPARE_DONE,
         ARM_UC_PAAL_EVENT_WRITE_DONE,
         ARM_UC_PAAL_EVENT_FINALIZE_DONE,
         ARM_UC_PAAL_EVENT_READ_DONE,
         ARM_UC_PAAL_EVENT_ACTIVATE_DONE,
-        ARM_UC_PAAL_EVENT_GET_ACTIVE_FIRMWARE_DETAILS_DONE,
         ARM_UC_PAAL_EVENT_GET_FIRMWARE_DETAILS_DONE,
-        ARM_UC_PAAL_EVENT_GET_INSTALLER_DETAILS_DONE,
-        ARM_UC_PAAL_EVENT_INITIALIZE_ERROR,
         ARM_UC_PAAL_EVENT_PREPARE_ERROR,
         ARM_UC_PAAL_EVENT_WRITE_ERROR,
         ARM_UC_PAAL_EVENT_FINALIZE_ERROR,
         ARM_UC_PAAL_EVENT_READ_ERROR,
         ARM_UC_PAAL_EVENT_ACTIVATE_ERROR,
-        ARM_UC_PAAL_EVENT_GET_ACTIVE_FIRMWARE_DETAILS_ERROR,
         ARM_UC_PAAL_EVENT_GET_FIRMWARE_DETAILS_ERROR,
-        ARM_UC_PAAL_EVENT_GET_INSTALLER_DETAILS_ERROR,
     */
     tr_debug("arm_uc_pal_classic_callback");
 
     switch (event) {
-        case PAL_IMAGE_EVENT_INIT:
-            arm_uc_pal_classic_signal_callback(ARM_UC_PAAL_EVENT_INITIALIZE_DONE);
-            break;
         case PAL_IMAGE_EVENT_PREPARE:
             arm_uc_pal_classic_signal_callback(ARM_UC_PAAL_EVENT_PREPARE_DONE);
             break;
@@ -110,8 +101,7 @@ arm_uc_error_t ARM_UC_Classic_PAL_Initialize(ARM_UC_PAAL_UPDATE_SignalEvent_t ca
 
         if ((status1 == PAL_SUCCESS) && (status2.error == ERR_NONE)) {
             arm_uc_pal_external_callback = callback;
-            arm_uc_pal_classic_signal_callback(ARM_UC_PAAL_EVENT_INITIALIZE_DONE);
-
+ 
             result.code = ERR_NONE;
         } else {
             result.code = ERR_NOT_READY;

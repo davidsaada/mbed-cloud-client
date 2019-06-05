@@ -129,12 +129,8 @@ arm_uc_error_t ARM_UC_PAL_Linux_Initialize(ARM_UC_PAAL_UPDATE_SignalEvent_t call
                 /* create a second thread which executes worker_parameters_prepare */
                 result = spawn_thread(arm_uc_pal_linux_extended_post_worker,
                                       arm_uc_worker_parameters.initialize);
-            } else {
-                /* call event handler */
-                arm_uc_pal_linux_signal_callback(ARM_UC_PAAL_EVENT_INITIALIZE_DONE, false);
             }
         }
-
     }
 
     return result;
@@ -575,10 +571,6 @@ arm_uc_error_t ARM_UC_PAL_Linux_GetActiveFirmwareDetails(arm_uc_firmware_details
             if (result.error == ERR_NONE) {
                 UC_PAAL_TRACE("version: %" PRIu64, details->version);
                 UC_PAAL_TRACE("size: %"PRIu64, details->size);
-
-                if (result.error == ERR_NONE) {
-                    arm_uc_pal_linux_signal_callback(ARM_UC_PAAL_EVENT_GET_ACTIVE_FIRMWARE_DETAILS_DONE, false);
-                }
             }
         }
     }
@@ -659,10 +651,6 @@ arm_uc_error_t ARM_UC_PAL_Linux_GetInstallerDetails(arm_uc_installer_details_t *
         } else {
             /* normal read */
             result = arm_uc_pal_linux_internal_read_installer(details);
-
-            if (result.error == ERR_NONE) {
-                arm_uc_pal_linux_signal_callback(ARM_UC_PAAL_EVENT_GET_INSTALLER_DETAILS_DONE, false);
-            }
         }
     }
 

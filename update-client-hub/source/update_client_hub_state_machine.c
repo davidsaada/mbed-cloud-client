@@ -169,6 +169,16 @@ static void arm_uc_hub_debug_output()
 /* State machine                                                             */
 /*****************************************************************************/
 
+/* Short hand for simple error handling code of init sequence */
+#define HANDLE_INIT_ERROR(retval, msg, ...)                  \
+    if (retval.error != ERR_NONE)                       \
+    {                                                   \
+        UC_HUB_ERR_MSG(msg " error code %s",            \
+                       ##__VA_ARGS__,                   \
+                       ARM_UC_err2Str(retval));         \
+        return retval;                                          \
+    }
+
 /* Short hand for simple error handling code */
 #define HANDLE_ERROR(retval, msg, ...)                  \
     if (retval.error != ERR_NONE)                       \
@@ -198,6 +208,64 @@ arm_uc_firmware_details_t *ARM_UC_HUB_getActiveFirmwareDetails(void)
     return arm_uc_active_details_available ? &arm_uc_active_details : NULL;
 }
 
+arm_uc_error_t ARM_UC_HUB_initSequence()
+{
+    arm_uc_error_t retval = ARM_UC_ERROR(ERR_NONE);
+
+    /* report the active firmware hash to the Cloud in parallel
+       with the main user application.
+    */
+    arm_uc_active_details_available = false;
+
+    retval = ARM_UC_FirmwareManager.GetActiveFirmwareDetails(&arm_uc_active_details);
+    HANDLE_INIT_ERROR(retval, "Firmware manager GetActiveFirmwareDetails failed");
+
+    /* copy hash to buffer */
+    memcpy(front_buffer.ptr,
+           arm_uc_active_details.hash,
+           ARM_UC_SHA256_SIZE);
+
+    front_buffer.size = ARM_UC_SHA256_SIZE;
+
+    /* send hash to update service */
+    ARM_UC_ControlCenter_ReportName(&front_buffer);
+
+    /* signal to the API that the firmware details are now available */
+    arm_uc_active_details_available = true;
+
+    UC_HUB_TRACE("Active version: %" PRIu64,
+                 arm_uc_active_details.version);
+
+    /* send timestamp to update service */
+    ARM_UC_ControlCenter_ReportVersion(arm_uc_active_details.version);
+
+    retval = ARM_UC_FirmwareManager.GetInstallerDetails(&arm_uc_installer_details);
+    HANDLE_INIT_ERROR(retval, "Firmware manager GetInstallerDetails failed");
+
+#if 0
+    printf("bootloader: ");
+    for (uint32_t index = 0; index < 20; index++) {
+        printf("%02X", arm_uc_installer_details.arm_hash[index]);
+    }
+    printf("\r\n");
+
+    printf("layout: %" PRIu32 "\r\n", arm_uc_installer_details.layout);
+#endif
+
+    /* report installer details to mbed cloud */
+    arm_uc_buffer_t bootloader_hash = {
+        .size_max = ARM_UC_SHA256_SIZE,
+        .size = ARM_UC_SHA256_SIZE,
+        .ptr = (arm_uc_installer_details.arm_hash)
+    };
+    ARM_UC_ControlCenter_ReportBootloaderHash(&bootloader_hash);
+
+    bootloader_hash.ptr = (arm_uc_installer_details.oem_hash);
+    ARM_UC_ControlCenter_ReportOEMBootloaderHash(&bootloader_hash);
+
+    return retval;
+}
+
 void ARM_UC_HUB_setState(arm_uc_hub_state_t new_state)
 {
     arm_uc_error_t retval;
@@ -210,105 +278,6 @@ void ARM_UC_HUB_setState(arm_uc_hub_state_t new_state)
         arm_uc_hub_state = new_state;
 
         switch (arm_uc_hub_state) {
-            /*****************************************************************/
-            /* Initialization                                                */
-            /*****************************************************************/
-            case ARM_UC_HUB_STATE_INITIALIZED:
-                UC_HUB_TRACE("ARM_UC_HUB_STATE_INITIALIZED");
-
-                /* report the active firmware hash to the Cloud in parallel
-                   with the main user application.
-                */
-                arm_uc_active_details_available = false;
-                new_state = ARM_UC_HUB_STATE_GET_ACTIVE_FIRMWARE_DETAILS;
-                break;
-
-            case ARM_UC_HUB_STATE_INITIALIZING:
-                UC_HUB_TRACE("ARM_UC_HUB_STATE_INITIALIZING");
-                break;
-
-            /*****************************************************************/
-            /* Report current firmware hash                                  */
-            /*****************************************************************/
-            case ARM_UC_HUB_STATE_GET_ACTIVE_FIRMWARE_DETAILS:
-                UC_HUB_TRACE("ARM_UC_HUB_STATE_GET_ACTIVE_FIRMWARE_DETAILS");
-
-                retval = ARM_UC_FirmwareManager.GetActiveFirmwareDetails(&arm_uc_active_details);
-                HANDLE_ERROR(retval, "Firmware manager GetActiveFirmwareDetails failed");
-                break;
-
-            case ARM_UC_HUB_STATE_REPORT_ACTIVE_HASH:
-                UC_HUB_TRACE("ARM_UC_HUB_STATE_REPORT_ACTIVE_HASH");
-
-                /* copy hash to buffer */
-                memcpy(front_buffer.ptr,
-                       arm_uc_active_details.hash,
-                       ARM_UC_SHA256_SIZE);
-
-                front_buffer.size = ARM_UC_SHA256_SIZE;
-
-                /* send hash to update service */
-                ARM_UC_ControlCenter_ReportName(&front_buffer);
-
-                /* signal to the API that the firmware details are now available */
-                arm_uc_active_details_available = true;
-
-                new_state = ARM_UC_HUB_STATE_REPORT_ACTIVE_VERSION;
-                break;
-
-            /*****************************************************************/
-            /* Report current firmware version                               */
-            /*****************************************************************/
-            case ARM_UC_HUB_STATE_REPORT_ACTIVE_VERSION:
-                UC_HUB_TRACE("ARM_UC_HUB_STATE_REPORT_ACTIVE_VERSION");
-
-                UC_HUB_TRACE("Active version: %" PRIu64,
-                             arm_uc_active_details.version);
-
-                /* send timestamp to update service */
-                ARM_UC_ControlCenter_ReportVersion(arm_uc_active_details.version);
-
-                new_state = ARM_UC_HUB_STATE_GET_INSTALLER_DETAILS;
-                break;
-
-            /*****************************************************************/
-            /* Report bootloader information                                 */
-            /*****************************************************************/
-            case ARM_UC_HUB_STATE_GET_INSTALLER_DETAILS:
-                UC_HUB_TRACE("ARM_UC_HUB_STATE_GET_INSTALLER_DETAILS");
-
-                retval = ARM_UC_FirmwareManager.GetInstallerDetails(&arm_uc_installer_details);
-                HANDLE_ERROR(retval, "Firmware manager GetInstallerDetails failed");
-                break;
-
-            case ARM_UC_HUB_STATE_REPORT_INSTALLER_DETAILS: {
-                UC_HUB_TRACE("ARM_UC_HUB_STATE_REPORT_INSTALLER_DETAILS");
-
-#if 0
-                printf("bootloader: ");
-                for (uint32_t index = 0; index < 20; index++) {
-                    printf("%02X", arm_uc_installer_details.arm_hash[index]);
-                }
-                printf("\r\n");
-
-                printf("layout: %" PRIu32 "\r\n", arm_uc_installer_details.layout);
-#endif
-
-                /* report installer details to mbed cloud */
-                arm_uc_buffer_t bootloader_hash = {
-                    .size_max = ARM_UC_SHA256_SIZE,
-                    .size = ARM_UC_SHA256_SIZE,
-                    .ptr = (arm_uc_installer_details.arm_hash)
-                };
-                ARM_UC_ControlCenter_ReportBootloaderHash(&bootloader_hash);
-
-                bootloader_hash.ptr = (arm_uc_installer_details.oem_hash);
-                ARM_UC_ControlCenter_ReportOEMBootloaderHash(&bootloader_hash);
-
-                /* set new state */
-                new_state = ARM_UC_HUB_STATE_IDLE;
-                break;
-            }
 
             /*****************************************************************/
             /* Idle                                                          */

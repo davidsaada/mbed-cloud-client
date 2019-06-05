@@ -31,13 +31,6 @@ extern "C" {
  */
 typedef enum {
     ARM_UC_HUB_STATE_UNINITIALIZED,
-    ARM_UC_HUB_STATE_INITIALIZING,
-    ARM_UC_HUB_STATE_INITIALIZED,
-    ARM_UC_HUB_STATE_GET_ACTIVE_FIRMWARE_DETAILS,
-    ARM_UC_HUB_STATE_REPORT_ACTIVE_HASH,
-    ARM_UC_HUB_STATE_REPORT_ACTIVE_VERSION,
-    ARM_UC_HUB_STATE_GET_INSTALLER_DETAILS,
-    ARM_UC_HUB_STATE_REPORT_INSTALLER_DETAILS,
     ARM_UC_HUB_STATE_IDLE,
     ARM_UC_HUB_STATE_NOTIFIED,
     ARM_UC_HUB_STATE_CERT_STORED,
@@ -89,6 +82,12 @@ extern arm_uc_hub_state_t ARM_UC_HUB_getState(void);
  * @param state New state.
  */
 void ARM_UC_HUB_setState(arm_uc_hub_state_t state);
+
+/**
+ * @brief UC initialization sequence.
+ * @return return status
+ */
+arm_uc_error_t ARM_UC_HUB_initSequence();
 
 /**
  * @brief Set callback function for when the Update Client is initialized.

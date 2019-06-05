@@ -217,8 +217,7 @@ arm_uc_error_t ARM_UC_PAL_FlashIAP_Initialize(void (*callback)(uint32_t))
 
     if (status == ARM_UC_FLASHIAP_SUCCESS) {
         arm_uc_pal_flashiap_callback = callback;
-        arm_uc_pal_flashiap_signal_internal(ARM_UC_PAAL_EVENT_INITIALIZE_DONE);
-
+ 
         result.code = ERR_NONE;
     }
 
@@ -642,13 +641,6 @@ arm_uc_error_t ARM_UC_PAL_FlashIAP_GetActiveDetails(arm_uc_firmware_details_t *d
 
             result.code = ERR_NONE;
         }
-
-        /* signal event if operation was successful */
-        if (result.error == ERR_NONE) {
-            UC_PAAL_TRACE("callback");
-
-            arm_uc_pal_flashiap_signal_internal(ARM_UC_PAAL_EVENT_GET_ACTIVE_FIRMWARE_DETAILS_DONE);
-        }
     }
 
     return result;
@@ -688,8 +680,6 @@ arm_uc_error_t ARM_UC_PAL_FlashIAP_GetInstallerDetails(arm_uc_installer_details_
             /* offset not set, zero details struct */
             memset(details, 0, sizeof(arm_uc_installer_details_t));
         }
-
-        arm_uc_pal_flashiap_signal_internal(ARM_UC_PAAL_EVENT_GET_INSTALLER_DETAILS_DONE);
 
         result.code = ERR_NONE;
     }

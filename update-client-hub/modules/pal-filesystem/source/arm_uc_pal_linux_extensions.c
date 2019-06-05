@@ -69,10 +69,6 @@ arm_uc_error_t pal_ext_imageGetActiveDetails(arm_uc_firmware_details_t *details)
         memset(details, 0, sizeof(arm_uc_firmware_details_t));
 
         result.code = ERR_NONE;
-
-        if (arm_ucex_linux_callback) {
-            arm_ucex_linux_callback(ARM_UC_PAAL_EVENT_GET_ACTIVE_FIRMWARE_DETAILS_DONE);
-        }
     }
 
     return result;
@@ -87,10 +83,6 @@ arm_uc_error_t pal_ext_installerGetDetails(arm_uc_installer_details_t *details)
         memset(details, 0, sizeof(arm_uc_installer_details_t));
 
         result.code = ERR_NONE;
-
-        if (arm_ucex_linux_callback) {
-            arm_ucex_linux_callback(ARM_UC_PAAL_EVENT_GET_INSTALLER_DETAILS_DONE);
-        }
     }
 
     return result;

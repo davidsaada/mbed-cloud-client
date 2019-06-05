@@ -202,8 +202,7 @@ arm_uc_error_t ARM_UC_PAL_BlockDevice_Initialize(ARM_UC_PAAL_UPDATE_SignalEvent_
 
         if (status == ARM_UC_BLOCKDEVICE_SUCCESS) {
             pal_blockdevice_event_handler = callback;
-            pal_blockdevice_signal_internal(ARM_UC_PAAL_EVENT_INITIALIZE_DONE);
-            result.code = ERR_NONE;
+             result.code = ERR_NONE;
         }
     }
 

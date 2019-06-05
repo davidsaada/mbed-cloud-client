@@ -56,7 +56,6 @@ arm_uc_error_t ARM_UC_mmInit(arm_uc_mmContext_t **mmCtx, void (*event_handler)(u
     // initialize callback node
     arm_uc_mmPersistentContext.applicationCallbackStorage.lock = 0;
 
-    ARM_UC_PostCallback(&arm_uc_mmPersistentContext.applicationCallbackStorage, event_handler, ARM_UC_MM_RC_DONE);
 // This code will be re-enabled when storage is available
 #if 0
     ARM_UC_mmCfStoreInit(api);

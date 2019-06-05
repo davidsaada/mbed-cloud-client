@@ -80,8 +80,6 @@ arm_uc_error_t ARM_UC_HUB_Initialize(void (*init_cb)(uintptr_t))
         UC_HUB_ERR_MSG("Already Initialized/Initializing");
         return (arm_uc_error_t) { ERR_INVALID_STATE };
     }
-    ARM_UC_HUB_setState(ARM_UC_HUB_STATE_INITIALIZING);
-
     ARM_UC_SchedulerInit();
     ARM_UC_HUB_setInitializationCallback(init_cb);
     ARM_UC_SetSchedulerErrorHandler(UC_HUB_scheduler_error_handler);
@@ -108,6 +106,11 @@ arm_uc_error_t ARM_UC_HUB_Initialize(void (*init_cb)(uintptr_t))
     retval = ARM_UC_mmInit(&pManifestManagerContext,
                            ARM_UC_HUB_ManifestManagerEventHandler,
                            NULL);
+
+    retval = ARM_UC_HUB_initSequence();
+    HANDLE_INIT_ERROR(retval, "UC init sequence failed")
+
+    ARM_UC_HUB_setState(ARM_UC_HUB_STATE_IDLE);
     HANDLE_INIT_ERROR(retval, "Manifest manager init failed")
 
     /* add hard coded certificates to the manifest manager */
@@ -424,7 +427,7 @@ arm_uc_error_t ARM_UC_GetDeviceId(uint8_t *id,
 
 arm_uc_error_t ARM_UC_HUB_Uninitialize(void)
 {
-    if (ARM_UC_HUB_getState() <= ARM_UC_HUB_STATE_INITIALIZED) {
+    if (ARM_UC_HUB_getState() <= ARM_UC_HUB_STATE_IDLE) {
         UC_HUB_ERR_MSG("Update Client not initialized");
         return (arm_uc_error_t) { ERR_INVALID_STATE };
     }

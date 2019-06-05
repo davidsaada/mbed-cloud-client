@@ -110,18 +110,6 @@ void ARM_UC_HUB_FirmwareManagerEventHandler(uintptr_t event)
             }
             break;
 
-        case UCFM_EVENT_GET_ACTIVE_FIRMWARE_DETAILS_DONE:
-            UC_HUB_TRACE("UCFM_EVENT_GET_ACTIVE_FIRMWARE_DETAILS_DONE");
-
-            ARM_UC_HUB_setState(ARM_UC_HUB_STATE_REPORT_ACTIVE_HASH);
-            break;
-
-        case UCFM_EVENT_GET_INSTALLER_DETAILS_DONE:
-            UC_HUB_TRACE("UCFM_EVENT_GET_INSTALLER_DETAILS_DONE");
-
-            ARM_UC_HUB_setState(ARM_UC_HUB_STATE_REPORT_INSTALLER_DETAILS);
-            break;
-
         /* Encountered error while writing firmware */
         case UCFM_EVENT_WRITE_ERROR:
             UC_HUB_TRACE("UCFM_EVENT_WRITE_ERROR");
@@ -162,33 +150,8 @@ void ARM_UC_HUB_FirmwareManagerEventHandler(uintptr_t event)
             ARM_UC_HUB_ErrorHandler(FIRM_ERR_ACTIVATE, arm_uc_hub_state);
             break;
 
-        case UCFM_EVENT_GET_ACTIVE_FIRMWARE_DETAILS_ERROR:
-            /* client should be able to proceed as normal */
-            UC_HUB_TRACE("UCFM_EVENT_GET_ACTIVE_FIRMWARE_DETAILS_ERROR");
-
-            ARM_UC_HUB_setState(ARM_UC_HUB_STATE_GET_INSTALLER_DETAILS);
-            break;
-
-        case UCFM_EVENT_GET_INSTALLER_DETAILS_ERROR:
-            /* client should be able to proceed as normal */
-            UC_HUB_TRACE("UCFM_EVENT_GET_INSTALLER_DETAILS_ERROR");
-
-            ARM_UC_HUB_setState(ARM_UC_HUB_STATE_IDLE);
-            break;
-
-        case UCFM_EVENT_INITIALIZE_DONE:
-            /* TODO Fix whole call chain to support async init */
-            /* swallow async init done event here */
-            UC_HUB_TRACE("UCFM_EVENT_INITIALIZE_DONE");
-            break;
-
         case UCFM_EVENT_GET_FIRMWARE_DETAILS_DONE:
             UC_HUB_TRACE("UCFM_EVENT_GET_FIRMWARE_DETAILS_DONE");
-            break;
-
-        case UCFM_EVENT_INITIALIZE_ERROR:
-            // TODO find out if ignoring this is sensible.
-            UC_HUB_TRACE("UCFM_EVENT_INITIALIZE_ERROR");
             break;
 
         case UCFM_EVENT_PREPARE_ERROR:
@@ -278,10 +241,7 @@ void ARM_UC_HUB_ManifestManagerEventHandler(uintptr_t event)
         case ARM_UC_MM_RC_DONE:
             UC_HUB_TRACE("ARM_UC_MM_RC_DONE");
 
-            if (arm_uc_hub_state == ARM_UC_HUB_STATE_INITIALIZING) {
-                /* Update Hub has been initialized. */
-                ARM_UC_HUB_setState(ARM_UC_HUB_STATE_INITIALIZED);
-            } else if (arm_uc_hub_state == ARM_UC_HUB_STATE_MANIFEST_AWAIT_INSERT) {
+            if (arm_uc_hub_state == ARM_UC_HUB_STATE_MANIFEST_AWAIT_INSERT) {
                 /* Manifest processed */
                 ARM_UC_HUB_setState(ARM_UC_HUB_STATE_MANIFEST_INSERT_DONE);
             } else {
